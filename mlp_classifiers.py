@@ -184,10 +184,9 @@ def mlp_COPD(config):
     print('##################################################')
     print(config)
     accu = {'COPD':{'test':[]}}
-    mlp_COPD_train(65, 1, accu, config)
-    #for exp_idx in range(repe_time):
-        #mlp_COPD_train(exp_idx, 1, accu, config)
-        #mlp_COPD_train(65, 1, accu, config)
+    # mlp_COPD_train(65, 1, accu, config)
+    for exp_idx in range(repe_time):
+        mlp_COPD_train(exp_idx, 1, accu, config)
     print('ADNI test accuracy ',
           'COPD {0:.4f}+/-{1:.4f}'.format(float(np.mean(accu['COPD']['test'])), float(np.std(accu['COPD']['test']))))    
 
@@ -320,11 +319,11 @@ def mlp_COPD_train(exp_idx, repe_time, accu, config):
                             seed=seed+i,
                             model_name='mlp_COPD',
                             metric='accuracy')
-      #   mlp.train(lr=mlp_setting['learning_rate'],
-      #             epochs=mlp_setting['train_epochs'])
+        mlp.train(lr=mlp_setting['learning_rate'],
+                  epochs=mlp_setting['train_epochs'])
         
-        mlp.draw(i)
-        return
+        # mlp.draw(i)
+        # return
         
         accu_test = mlp.test(i)[2]
         accu['COPD']['test'].append(accu_test)
@@ -339,7 +338,7 @@ def mlp_COPD_train(exp_idx, repe_time, accu, config):
 if __name__ == "__main__":
     config = read_json('./config.json')
     seed, repe_time = 1000, config['repeat_time']
-    #data_split(repe_time=repe_time)
+    data_split(repe_time=repe_time)
     mlp_COPD(config["mlp_COPD"])
 #    mlp_A(config["mlp_A"])
 #     mlp_B(config["mlp_B"])

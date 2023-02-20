@@ -734,7 +734,7 @@ class MLP_Wrapper_COPD:
         if not os.path.exists(self.checkpoint_dir):
             os.mkdir(self.checkpoint_dir)
         self.prepare_dataloader(batch_size, balanced)
-        self.model = _MLP_COPD(in_size=4, fil_num=fil_num, drop_rate=drop_rate)
+        self.model = _MLP_COPD(in_size=3, fil_num=fil_num, drop_rate=drop_rate)
 
     def prepare_dataloader(self, batch_size, balanced):
         train_data = MLP_Data_COPD(self.exp_idx, stage='train', seed=self.seed)
@@ -765,6 +765,8 @@ class MLP_Wrapper_COPD:
         for self.epoch in range(epochs):
             self.train_model_epoch()
             valid_matrix = self.valid_model_epoch()
+            #print("valid_matrix", valid_matrix)
+    
             #print('{}th epoch validation confusion matrix:'.format(self.epoch), valid_matrix, 'eval_metric:', "%.4f" % self.eval_metric(valid_matrix))
             self.save_checkpoint(valid_matrix)
         print('Best model saved at the {}th epoch:'.format(self.optimal_epoch), self.optimal_valid_metric, self.optimal_valid_matrix)
@@ -785,6 +787,7 @@ class MLP_Wrapper_COPD:
             self.model.train(False)
             valid_matrix = [[0, 0], [0, 0]]
             for inputs, labels in self.valid_dataloader:
+                #print("inputs", inputs)
                 inputs, labels = inputs, labels
                 preds = self.model(inputs)
                 valid_matrix = matrix_sum(valid_matrix, get_confusion_matrix(preds, labels))

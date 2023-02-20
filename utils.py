@@ -225,7 +225,7 @@ def read_csv_copd_age(filename):
     #data = data.fillna(data.mean())
 
 
-def read_csv_copd(filename):
+def read_csv_copd2(filename):
     data = pd.read_csv(filename,usecols=['姓名', 'spo2', '年龄','性别','体重','吸烟年限','戒烟年限','患病年限','CAT','EXACT','历史急性加重住院次数','未来一年急性加重次数',"alff5", "alff10", "reho6", "reho14", "reho15"])
     names = data['姓名']
     labels = (data['未来一年急性加重次数'] > 0).astype(np.int_)
@@ -273,6 +273,47 @@ def read_csv_copd(filename):
     #data = data.fillna(data.mean())
 
 
+def read_csv_copd(filename):
+    data = pd.read_csv(filename,usecols=['姓名','未来一年后加重次数', '急性加重住院次数',"SurfArea3", "ThickAvg-r3"])
+    names = data['姓名']
+    labels = (data['未来一年后加重次数'] > 0).astype(np.int_)
+
+    #print("label", labels)
+
+    # age = data['年龄']
+    # spo2 = data['spo2'].fillna(data['spo2'].mean())
+    # cat = data['CAT'].fillna(data['CAT'].mean())
+    # ae_times = data['历史急性加重住院次数'].fillna(0)
+    # tz = data['体重']
+    # tz = tz.fillna(tz.mean())
+    # xynx = data['吸烟年限']
+    # xynx = xynx.fillna(0)
+    # hbnx = data['患病年限']
+    # hbnx = hbnx.fillna(0)
+
+
+    jbjzcs = data['急性加重住院次数']
+    jbjzcs = jbjzcs.fillna(0)
+    SurfArea3 = data['SurfArea3']
+    ThickAvg_r3 = data['ThickAvg-r3']
+
+
+    demors = [
+        jbjzcs, 
+        SurfArea3,
+        ThickAvg_r3,
+        ]
+    demors = pd.concat(demors, axis=1, ignore_index=True)
+    # print(demors)
+    #print(type(demors))
+
+    #print(demors.values.tolist())
+    #print(demors.values.tolist())
+    return names.values.tolist(), labels.values.tolist(), demors.values.tolist()
+
+    #data = data.fillna(data.mean())
+
+
 
 def data_split(repe_time):
     with open('./lookupcsv/ADNI.csv', 'r') as f:
@@ -283,8 +324,8 @@ def data_split(repe_time):
 
     for i in range(repe_time):
    
-        ae_data = list(filter(lambda d: int(d[79]) > 0,data))
-        nl_data = list(filter(lambda d: int(d[79]) <= 0,data))
+        ae_data = list(filter(lambda d: int(d[3]) > 0,data))
+        nl_data = list(filter(lambda d: int(d[3]) <= 0,data))
         
         random.shuffle(ae_data) 
         random.shuffle(nl_data) 
