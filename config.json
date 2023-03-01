@@ -1,5 +1,5 @@
 {
-    "repeat_time":              10,
+    "repeat_time":              5,
     "fcn":{
         "fil_num":              3,
         "drop_rate":            0.5,
@@ -92,10 +92,10 @@
         "imbalan_ratio":        1.0,
         "fil_num":              8,
         "drop_rate":            0.0,
-        "batch_size":           10,
-        "balanced":             0,
+        "batch_size":           8,
+        "balanced":             1,
         "learning_rate":        0.001,
-        "train_epochs":         1000
+        "train_epochs":         200
     }
 }
 
