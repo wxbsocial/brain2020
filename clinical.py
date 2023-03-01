@@ -32,22 +32,22 @@ from captum.attr import IntegratedGradients, DeepLift, GradientShap, NoiseTunnel
 
 
 
-filename = "data/clinical/Data.csv"
-error_sub_file = 'output/clinical/error_sub.txt'
+filename = "data/clinical/Data_remove_0.csv"
+error_sub_file = 'output/clinical/error_sub_remove_0.txt'
 model_save_dir = "model/clinical/"
 model_save_path = model_save_dir + "model-fold-{}.pth"
 
 load_data_size = -1
 batch_size = 8
-num_epochs = 5000
+num_epochs = 2000
 learning_rate = 0.001
-drop_rate = 0.0
+drop_rate = 0.5
 imbalanced_ratio = 1.0
-fil_num = 16
+fil_num = 64
 # anim = False
 # parallel = True
-anim = True
-parallel = anim == False
+anim = False
+parallel = False
 
 torch.manual_seed(42)
 
@@ -176,6 +176,7 @@ def train_model(fold,X,y,n,train_idx, test_idx,results):
     y_test = [y[i] for i in test_idx]
     n_test = [n[i] for i in test_idx]
 
+    print("n_test", n_test)
     # print("X_train", X_train)
     # print("y_train", y_train)
     # print("n_train", n_train)
@@ -198,8 +199,7 @@ def train_model(fold,X,y,n,train_idx, test_idx,results):
 
     if anim:
         animator = d2l.Animator(xlabel='epoch', xlim=[1, num_epochs],
-                         legend=['train loss', 'train acc', 'test acc'])
-
+                            legend=['tl', 'ta', 'vl', 'va'])
     #train
     for epoch in range(num_epochs):  # loop over the dataset multiple times
         train_metric = d2l.Accumulator(3)
@@ -220,7 +220,7 @@ def train_model(fold,X,y,n,train_idx, test_idx,results):
 
     
         #valid
-        valid_metric = d2l.Accumulator(2)
+        valid_metric = d2l.Accumulator(3)
         with torch.no_grad():
             network.eval()
             for inputs, labels, _ in test_iter:
@@ -230,15 +230,20 @@ def train_model(fold,X,y,n,train_idx, test_idx,results):
 
                 acc_outputs = nn.Softmax(dim=1)(outputs)
                 acc = acc_outputs[0,labels[0]]
-                valid_metric.add(acc, 1)
+                valid_metric.add(loss * inputs.shape[0], acc * inputs.shape[0], inputs.shape[0])
+        
         
         if anim:
             if (epoch % 50 == 0 or epoch + 1 == num_epochs):
-                valid_acc = valid_metric[0] / valid_metric[1]
+                valid_l = valid_metric[0] / valid_metric[2]
+                valid_acc = valid_metric[1] / valid_metric[2]
                 train_l = train_metric[0] / train_metric[2]
                 train_acc = train_metric[1] / train_metric[2]
-                animator.add(epoch + 1, (train_l, train_acc, valid_acc))
-
+                animator.add(epoch + 1, (train_l, train_acc,valid_l, valid_acc))
+    
+    valid_l = valid_metric[0] / valid_metric[2]
+    valid_acc = valid_metric[1] / valid_metric[2]
+    print("loss={:.3f}, acc={:.3f}".format(valid_l, valid_acc))
     # Process is complete.
     print('Training process has finished. Saving trained model.')
     
@@ -250,7 +255,6 @@ def train_model(fold,X,y,n,train_idx, test_idx,results):
 def result(data_size = load_data_size):
    
     del_error_sub()
-
    
     actuals = []
     probabilities = []
@@ -281,7 +285,6 @@ def result(data_size = load_data_size):
 
                 inputs, labels = inputs, labels
                 outputs = network(inputs)
-
 
                 acc_outputs = nn.Softmax(dim=1)(outputs)
                 acc = acc_outputs[0,labels[0]]
